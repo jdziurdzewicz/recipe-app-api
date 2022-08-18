@@ -24,8 +24,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-#          ignore-unfixed: true
+          ignore-unfixed: true
           image-ref: 'docker.io/my-organization/my-app:${{ github.sha }}'
           format: 'sarif'
           output: 'trivy-results.sarif'
