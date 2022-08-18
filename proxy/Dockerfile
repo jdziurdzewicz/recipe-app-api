@@ -1,4 +1,5 @@
-FROM nginxinc/nginx-unprivileged:1-alpine
+FROM nginxinc/nginx-unprivileged:1.20.2-alpine
+#FROM nginxinc/nginx-unprivileged:1-alpine
 LABEL maintainer="londonappdeveloper.com"
 
 COPY ./default.conf.tpl /etc/nginx/default.conf.tpl
