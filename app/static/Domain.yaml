@@ -1,0 +1,22 @@
+openapi: 3.1.0
+
+########
+# info #
+########
+info:
+  version: 0.0.1
+  title: 'Survey Domain'
+  description: 'tbd'
+
+##############
+# components #
+##############
+components:
+  #--------
+  # schemas
+  #--------
+  schemas:
+    SurveyTypeCategorizationScheme:
+      enum: ['ADAPT']
+    SurveyStatusCategorizationScheme:
+      enum: ['open','closed','tbd'] # TBD

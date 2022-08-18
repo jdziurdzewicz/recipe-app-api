@@ -1,0 +1,378 @@
+openapi: 3.0.1
+########
+# info #
+########
+info:
+  title: 'EBHR Portal Frontend API'
+  version: 0.0.1
+  contact:
+    name: 'EBHR'
+    email: 'api@ebhr.com'
+    url: 'https://ebhr.com/contact-us'
+  x-api-id: '4de856ac-05d0-4104-8997-dc38c931a21f'
+  x-audience: 'company-internal'
+  description: |
+    EBHR backend API dedicated for the EBHR Portal fronted application.
+
+###########
+# servers #
+###########
+servers:
+  - description: 'Development Environment'
+    url: 'https://dev.ebhr.com/api' # do we want to include version number from the start (e.g. '/v1')?
+  - description: 'UAT Environment'
+    url: 'https://uat.ebhr.com/api'
+  - description: 'Production Environment'
+    url: 'https://ebhr.com/api'
+
+############
+# security #
+############
+security:
+  - oAuth2: []
+
+########
+# tags #
+########
+tags:
+  - name: 'Surveys'
+    description: 'A collection of operations dedicated for survey configuration and management'
+  - name: 'Questionnaires'
+    description: 'Tbd'
+  - name: 'Survey Results'
+    description: 'Tbd'
+
+#########
+# paths #
+#########
+paths:
+  #--------------
+  # surveys paths
+  #--------------
+  '/surveys':
+    get:
+      operationId: 'listSurveys'
+      summary: 'List surveys'
+      description: |
+        Provides a single page of the paginated survey list.
+
+        Surveys in the list can be filtered by id or name of the organization a survey is conducted for, as well as survey status (TBD by default). If there are no surveys matching to specified criteria, an empty page is returned.
+        
+        Surveys in the list are by default ordered ascending by end date, but sort order can be adjusted.
+      tags:
+        - 'Surveys'
+      parameters:
+        - $ref: '#/components/parameters/ListSurveysOrganizationId'
+        - $ref: '#/components/parameters/ListSurveysOrganizationName'
+        # - $ref: '#/components/parameters/ListSurveysSurveyType'
+        - $ref: '#/components/parameters/ListSurveysSurveyStatus'
+        - $ref: '#/components/parameters/ListSurveysSortOrder'
+        - $ref: 'CommonComponents.yaml#/components/parameters/PageNo'
+        - $ref: 'CommonComponents.yaml#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurveyListPage'
+              examples:
+                All:
+                  $ref: '#/components/examples/SurveyListPage_-_All'
+                Acme:
+                  $ref: '#/components/examples/SurveyListPage_-_Acme'
+                _WayneEnterprisesInc:
+                  $ref: '#/components/examples/SurveyListPage_-_WayneEnterprisesInc'
+        '400':
+          $ref: 'CommonComponents.yaml#/components/responses/Problem400'
+        '401':
+          $ref: 'CommonComponents.yaml#/components/responses/Problem401'
+        '403':
+          $ref: 'CommonComponents.yaml#/components/responses/Problem403'
+
+  '/survey/{surveyId}':
+    get:
+      operationId: 'viewSurvey'
+      summary: 'View details of a survey'
+      description: |
+        Provides representation of a single survey (identified by its id).
+
+        Tbd represents tbd.
+      tags:
+        - 'Surveys'
+      parameters:
+        - $ref: '#/components/parameters/ViewSurveySurveyId'
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurveyRepresentation'
+              examples:
+                Tbd:
+                  $ref: '#/components/examples/SurveyRepresentation_-_Tbd'
+        '400':
+          $ref: 'CommonComponents.yaml#/components/responses/Problem400'
+        '401':
+          $ref: 'CommonComponents.yaml#/components/responses/Problem401'
+        '403':
+          $ref: 'CommonComponents.yaml#/components/responses/Problem403'
+        '404':
+          $ref: 'CommonComponents.yaml#/components/responses/Problem404'
+
+
+##############
+# components #
+##############
+components:
+  #-----------------
+  # security schemes
+  #-----------------
+  securitySchemes:
+    $ref: 'CommonComponents.yaml#/components/securitySchemes/OAuth2'
+
+  #-----------
+  # parameters
+  #-----------
+  parameters:
+    # survey parameters
+    ListSurveysOrganizationId:
+      in: query
+      name: 'organizationId'
+      description: 'Limits items in the list to surveys conducted for organization identified by specified id.'
+      required: false
+      schema:
+        $ref: 'CommonComponents.yaml#/components/schemas/StringParamFormatDefinition'
+      example: 'tbd'
+    ListSurveysOrganizationName:
+      in: query
+      name: 'organizationName'
+      description: 'Limits items in the list to surveys conducted for organization which name contains specified value (case insensitive).'
+      required: false
+      schema:
+        $ref: 'CommonComponents.yaml#/components/schemas/StringParamFormatDefinition'
+      example: 'Acme'
+    ListSurveysSurveyStatus:
+      in: query
+      name: 'status'
+      description: |
+        Limits items in the list to surveys in the specified statuses (case insensitive).
+
+        Must be any of the following:
+        - `tbd`
+      required: false
+      schema:
+        type: array
+        items:
+          type: string
+          allOf:
+            - $ref: 'Domain.yaml#/components/schemas/SurveyStatusCategorizationScheme'
+          minItems: 1
+          maxItems: 4 #TBD
+        default: ['tbd'] # all except for finished?
+      explode: false
+      example: ['tbd']
+    ListSurveysSortOrder:
+      in: query
+      name: 'sortOrder'
+      required: false
+      description: |
+        Sorts surveys in the list by specified property/-ies (case insensitive) and (optionally) in specified order: `asc` (default) or `desc`.
+        
+        Surveys can be sorted by:
+        - `title` - title of a given survey,
+        - `creationDate` - date a given survey was created,
+        - `endDate` - survey end date.
+
+        Sort order is applied in priority from the first to the last specified property.
+      schema:
+        allOf:
+          - $ref: 'CommonComponents.yaml#/components/schemas/SortOrderParamFormatDefinition'
+        default: 'endDate:desc'
+      examples:
+        OneSortingPropertyWithoutOrder:
+          summary: 'One sorting property without order'
+          value: 'organizationName'
+        OneSortingPropertyWithDescOrder:
+          summary: 'One sorting property with order'
+          value: 'organizationName:desc'
+        TwoSortingPropertiesWithOrder:
+          summary: 'Two sorting properties, each with order'
+          value: 'organizationName:desc,creationDate:asc'
+    ViewSurveySurveyId:
+      in: path
+      name: 'surveyId'
+      description: 'Identifies desired survey'
+      required: true
+      schema:
+        $ref: 'CommonComponents.yaml#/components/schemas/StringParamFormatDefinition'
+      example: 'tbd'
+
+  #--------
+  # schemas
+  #--------
+  schemas:
+    # survey schemas
+    SurveyListPage:
+      title: 'Survey List Page'
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            title: 'Survey List Item'
+            type: object
+            properties:
+              id:
+                description: 'Unique and unalterable identifier of a given survey'
+                type: string
+                example: 'tbd'
+              organization:
+                description: 'Name of the organization a given survey is conducted for'
+                type: string
+                example: 'tbd'
+              title:
+                type: string
+                example: 'tbd'
+              type:
+                type: string
+                example: 'ADAPT'
+              status:
+                type: string
+                example: 'Tbd'
+              creationDate:
+                type: string
+                format: date # date-time?
+                example: '2022-08-10' # tbd
+              endDate:
+                type: string
+                format: date # date-time?
+                example: '2022-08-10' # tbd
+          maxItems: 100
+        pagingInfo:
+          $ref: 'CommonComponents.yaml#/components/schemas/OffsetPagingInfo'
+      required:
+        - 'items'
+        - 'pagingInfo'
+
+    # TbdCreationConfirmation:
+    #   type: object
+    #   properties:
+    #     tbd:
+    #       description: 'Unique and **unalterable** identifier of the newly created TBD within the TBD.'
+    #       type: string
+    #       example: 'TBD'
+    #   additionalProperties: false
+    #   required:
+    #     - tbd
+    SurveyRepresentation:
+      title: 'Survey Representation'
+      description: |
+        A complete representation of a single survey.
+
+        If a given property is not included in the representation, it means the property is not specified for a given survey.
+      type: object
+      properties:
+        id:
+          description: 'tbd'
+          type: string
+      required:
+        - 'id'
+  
+  #---------
+  # examples
+  #---------
+  examples:
+    SurveyListPage_-_All:
+      summary: 'All surveys'
+      value:
+        items:
+          - id: 'tbd'
+            organization: 'Acme'
+            title: 'Employee Survey Q1 2022'
+            type: 'ADAPT'
+            status: 'tbd' #finished
+            creationDate: '2022-01-10'
+            endDate: '2022-03-20'
+          - id: 'tbd'
+            organization: 'Acme'
+            title: 'Employee Survey Q2 2022'
+            type: 'ADAPT'
+            status: 'tbd' #finished
+            creationDate: '2022-04-10'
+            endDate: '2022-06-15'
+          - id: 'tbd'
+            organization: 'Acme'
+            title: 'Employee Survey Q3 2022'
+            type: 'ADAPT'
+            status: 'tbd' #open
+            creationDate: '2022-07-13'
+            endDate: '2022-09-26'
+        pagingInfo:
+          pageNo: 2
+          itemsPerPage: 20
+          totalPageCount: 5
+          totalItemsCount: 100
+    SurveyListPage_-_Acme:
+      summary: 'Acme'
+      value:
+        items:
+          - id: 'tbd'
+            organization: 'Acme'
+            title: 'Employee Survey Q1 2022'
+            type: 'ADAPT'
+            status: 'tbd' #finished
+            creationDate: '2022-01-10'
+            endDate: '2022-03-20'
+          - id: 'tbd'
+            organization: 'Acme'
+            title: 'Employee Survey Q2 2022'
+            type: 'ADAPT'
+            status: 'tbd' #finished
+            creationDate: '2022-04-10'
+            endDate: '2022-06-15'
+          - id: 'tbd'
+            organization: 'Acme'
+            title: 'Employee Survey Q3 2022'
+            type: 'ADAPT'
+            status: 'tbd' #open
+            creationDate: '2022-07-13'
+            endDate: '2022-09-26'
+        pagingInfo:
+          pageNo: 2
+          itemsPerPage: 20
+          totalPageCount: 5
+          totalItemsCount: 100
+    SurveyListPage_-_WayneEnterprisesInc:
+      summary: 'Wayne Enterprises Inc'
+      value:
+        items:
+          - id: 'tbd'
+            organization: 'Wayne Enterprises Inc'
+            title: 'Employee Survey 2021'
+            type: 'ADAPT'
+            status: 'tbd' #finished
+            creationDate: '2021-03-13'
+            endDate: '2022-05-26'
+          - id: 'tbd'
+            organization: 'Wayne Enterprises Inc'
+            title: 'Employee Survey 2022'
+            type: 'ADAPT'
+            status: 'tbd' #open
+            creationDate: '2022-07-13'
+            endDate: '2022-11-26'
+        pagingInfo:
+          pageNo: 2
+          itemsPerPage: 20
+          totalPageCount: 5
+          totalItemsCount: 100
+    SurveyRepresentation_-_Tbd:
+      summary: 'tbd'
+      value:
+        id: 'tbd'
+
+    # TBD_-_TBD2:
+    #   summary: 'TBD'
+    #   value:
+    #     TBD: 'TBD'

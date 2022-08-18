@@ -1,0 +1,298 @@
+openapi: 3.1.0
+
+########
+# info #
+########
+info:
+  version: 0.0.1
+  title: 'Common OAS v3 Components'
+  description: 'Common components for REST APIs defined in OAS v3.x'
+
+##############
+# components #
+##############
+components:
+  #------------------
+  # security schemes
+  #------------------
+  securitySchemes:
+    # OIDC: #TBD
+    #   type: 'openIdConnect'
+    #   description: 'tbd'
+    #   openIdConnectUrl: tbd
+    OAuth2:
+      type: 'oauth2'
+      description: 'TBD'
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://dev.ebhr.com/accounts/login/'
+          tokenUrl: 'https://tbd.com'
+          refreshUrl: 'https://tbd.com'
+          # scopes: []
+        # clientCredentials:
+        #   tokenUrl: 
+        #   refreshUrl: 
+        #   scopes: []
+  #--------
+  # headers
+  #--------
+  # headers:
+  #   Allow:
+  #     description: 'tbd'
+
+
+
+  #-----------
+  # parameters
+  #-----------
+  parameters:
+    # sorting parameters
+    
+
+    # pagination parameters
+    PageNo:
+      in: query
+      name: 'pageNo'
+      description: 'The page number to request - tbd'
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        default: 1
+      example: 5
+    PerPage:
+      in: query
+      name: 'perPage'
+      description: 'The number of items to return per page'
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 100
+        default: 20
+      example: 50
+
+  #--------
+  # schemas
+  #--------
+  schemas:
+    StringParamFormatDefinition:
+      title: 'a valid string param'
+      type: string
+      minLength: 1
+      maxLength: 255
+    SortOrderParamFormatDefinition:
+      type: string
+      pattern: ^([a-zA-Z0-9]+(:(asc|desc))?)+(,[a-zA-Z0-9]+(:(asc|desc))?)*$ # to-be-refined
+      minLength: 1
+      maxLength: 255 # is that enough?
+
+    ProblemDetails: #RFC7807
+      title: 'Problem Details'
+      type: object
+      properties:
+        title:
+          type: string
+          description: 'A short, human-readable summary of the problem'
+        status:
+          description: |
+            The HTTP status code ([RFC7231], Section 6) for this occurrence of the problem'
+          type: integer
+          format: int32
+          minimum: 100
+          maximum: 599
+        detail:
+          description: 'A human-readable explanation(s) specific to this occurrence of the problem'
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+              maxItems: 10
+      required:
+        # - type
+        - title
+        - status
+    OffsetPagingInfo:
+      title: 'Paging Info'
+      type: object
+      properties:
+        pageNo:
+          type: integer
+          description: 'The page number of the current response'
+          example: 2
+        itemsPerPage:
+          type: integer
+          description: 'The number of items on this page'
+          example: 20
+        totalPageCount:
+          type: integer
+          description: 'The total number of pages in the list'
+          example: 5
+        totalItemsCount:
+          type: integer
+          description: 'The total number of items in the list'
+          example: 100
+      additionalProperties: false
+
+  #----------
+  # responses
+  #----------
+  responses:
+    # error responses
+    Problem400:
+      description: 'Bad Request'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            title: 'Submitted request is not valid'
+            status: 400
+            details:
+              - 'Each survey must specify exactly one title.'
+              - 'The combination of the start date and end date specified for each survey must be such that end date is no earlier than start date.'
+    Problem401:
+      description: 'Unauthorized'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            # type: 'https://ebhr.com/problem/unauthorized'
+            title: 'Submitted request lacks valid authentication credentials.'
+            status: 401
+    Problem403:
+      description: 'Forbidden'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            title: 'Authenticated user is not authorized to perform requested operation'
+            status: 403
+    Problem404:
+      description: 'Not Found'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            title: 'The requested resource cannot be located'
+            status: 404
+            detail: 'Survey with id 123321 cannot be located'
+    Problem405:
+      description: 'Method Not Allowed'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'The method received in the request-line is not supported by the target resource.'
+            status: 405
+      # headers:
+      #   Allow:
+      #     $ref: '#/components/headers/Allow'
+    Problem406:
+      description: 'Not Acceptable'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'Not Acceptable'
+            status: 406
+            detail: 'The server is unable to produce a response matching the list of acceptable values.'
+    Problem409:
+      description: 'Conflict'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'TBD already exists'
+            status: 409
+            detail: 'tbd must be different from tbd of any other tbd'
+    Problem415:
+      description: 'Unsupported Media Type'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'Unsupported Media Type'
+            status: 415
+            detail: 'The request could not be completed due to the request body being formed of an unsupported media type. Only application/json is accepted by this API.'
+    Problem422:
+      description: 'Unprocessable Entity'
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/survey-closed' #about:blank ?
+            title: 'Survey TBD is already closed'
+            status: 422
+            detail: 'Each questionnaire must be submitted after survey start date and before survey end date.'
+    Problem429:
+      description: Too Many Requests
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'Too Many Requests'
+            status: 429
+            detail: 'The request could not be completed due to the client exceeding the request limit.'
+    Problem500:
+      description: Internal Server Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'An internal error occurred.'
+            status: 500
+            detail: 'The server is unable to process the request.'
+    Problem503:
+      description: Service Unavailable
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'Service Unavailable.'
+            status: 503
+            detail: 'The service is down for maintenance or may be overloaded. Please try again later'
+    Problem5xx:
+      description: Internal Server Error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          example:
+            type: 'https://ebhr.com/problem/tbd'
+            title: 'An internal error occurred.'
+            status: 500
+            detail: 'The server is unable to process the request.'
+            instance: 'https://oneadvanced.com/support/problem/74837463'
+  
+  #---------
+  # examples
+  #---------
+  examples:
+    TBD_-_TBD1:
+      summary: 'TBD'
+      value:
+        TBD: 'TBD'
+    TBD_-_TBD2:
+      summary: 'TBD'
+      value:
+        TBD: 'TBD'
