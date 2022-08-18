@@ -38,7 +38,7 @@ jobs:
 
       - name: Build an image from Dockerfile - Proxy
         run: |
-          docker build -t docker.images/proxy:${{ github.sha }} -f ./proxy/Dockerfile
+          docker build . -t docker.images/proxy:${{ github.sha }} -f proxy/Dockerfile
 
       - name: Run Trivy vulnerability scanner - Proxy
         uses: aquasecurity/trivy-action@master
