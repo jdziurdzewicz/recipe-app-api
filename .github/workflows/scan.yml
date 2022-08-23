@@ -26,15 +26,16 @@ jobs:
         with:
           ignore-unfixed: true
           image-ref: 'docker.images/main:${{ github.sha }}'
-          format: 'sarif'
-          output: 'trivy-results-main.sarif'
+#          format: 'sarif'
+#          output: 'trivy-results-main.sarif'
 
-      - name: Upload Trivy scan results to GitHub Security tab - Main
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: 'trivy-results-main.sarif'
-          category: 'main file scan'
+
+#      - name: Upload Trivy scan results to GitHub Security tab - Main
+#        uses: github/codeql-action/upload-sarif@v2
+#        if: always()
+#        with:
+#          sarif_file: 'trivy-results-main.sarif'
+#          category: 'main file scan'
 
       - name: Build an image from Dockerfile - Proxy
         run: |
