@@ -46,12 +46,12 @@ jobs:
         with:
           ignore-unfixed: true
           image-ref: 'docker.images/proxy:${{ github.sha }}'
-          format: 'sarif'
-          output: 'trivy-results-proxy.sarif'
-
-      - name: Upload Trivy scan results to GitHub Security tab - Proxy
-        uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: 'trivy-results-proxy.sarif'
-          category: 'proxy file scan'
+#          format: 'sarif'
+#          output: 'trivy-results-proxy.sarif'
+#
+#      - name: Upload Trivy scan results to GitHub Security tab - Proxy
+#        uses: github/codeql-action/upload-sarif@v2
+#        if: always()
+#        with:
+#          sarif_file: 'trivy-results-proxy.sarif'
+#          category: 'proxy file scan'
